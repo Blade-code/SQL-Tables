@@ -1,6 +1,6 @@
 [
     {
-        "server": "Server Name",
-        "user": "Server Name\\User Name"
+        "server_ip": "ip",
+        "user": "Server Name\\user name"
     }
 ]
