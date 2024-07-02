@@ -4,8 +4,8 @@ import logging.handlers
 import socket
 import os
 import json
-from getpass import getpass  
-from colorama import Fore, Style  
+from getpass import getpass  # For securely getting password input
+from colorama import Fore, Style  # For colored output
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -15,8 +15,8 @@ SERVER_CONFIG_FILE = os.path.join(current_dir, 'Login.json')
 TABLES_CONFIG_FILE = os.path.join(current_dir, 'Tables.txt')
 
 # Syslog server details
-SYSLOG_SVR_IP = "Syslog IP"
-SYSLOG_SVR_PORT = 514  
+SYSLOG_SVR_IP = "syslog ip"
+SYSLOG_SVR_PORT = 514  # default syslog port
 
 # State file path in the same directory as the script
 STATE_FILE = os.path.join(current_dir, '.SQL.state')
@@ -30,21 +30,21 @@ def load_server_configs():
 def load_table_configs():
     table_configs = []
     server_configs = load_server_configs()
-    server_dict = {config['server']: config for config in server_configs}
+    server_dict = {config['server_ip']: config for config in server_configs}
 
     with open(TABLES_CONFIG_FILE, 'r') as f:
         for line in f:
-            server_name, db_name, table_name = line.strip().split(':')
-            if server_name in server_dict:
-                config = server_dict[server_name]
+            server_ip, db_name, table_name = line.strip().split(':')
+            if server_ip in server_dict:
+                config = server_dict[server_ip]
                 table_configs.append({
-                    'server': config['server'],
+                    'server_ip': config['server_ip'],
                     'user': config['user'],
                     'database': db_name,
                     'table': table_name
                 })
             else:
-                print(f"{Fore.RED}Cannot find '{server_name}' in the server configurations.{Style.RESET_ALL}")
+                print(f"{Fore.RED}Cannot find '{server_ip}' in the server configurations.{Style.RESET_ALL}")
     return table_configs
 
 # Function to create a state file if it does not exist
@@ -82,10 +82,10 @@ def fetch_data_from_db(config):
         last_processed_id = state.get(config['table'], 0)
 
         # Prompt for password securely
-        password = getpass(prompt=f"Enter password for {config['user']}@{config['server']}: ")
+        password = getpass(prompt=f"Enter password for {config['user']}@{config['server_ip']}: ")
 
         connection = pymssql.connect(
-            server=config['server'],
+            server=config['server_ip'],
             user=config['user'],
             password=password,
             database=config['database']
@@ -131,19 +131,19 @@ def send_to_syslog(data, config):
         new_data = data[last_rows_read:]
         row_count = len(new_data)
         
-        message = f"{hostname} ({ip_address}) [{config['server']}] | {config['database']} | {config['table']} | Rows Read: {row_count}"
+        message = f"{hostname} ({ip_address}) [{config['server_ip']}] | {config['database']} | {config['table']} | Rows Read: {row_count}"
         logger.info(message)
         print(f"{Fore.GREEN}{message}{Style.RESET_ALL}")
         
         for row in new_data:
-            row_message = f"{hostname} ({ip_address}) [{config['server']}] | {config['database']} | {config['table']} | " + ' | '.join(map(str, row))
+            row_message = f"{hostname} ({ip_address}) [{config['server_ip']}] | {config['database']} | {config['table']} | " + ' | '.join(map(str, row))
             logger.info(row_message)
             print(f"{Fore.GREEN}{row_message}{Style.RESET_ALL}")
         
         update_state(config['table'], last_rows_read + row_count)
-        print(f"{Fore.GREEN}{row_count} new rows logged for {config['table']} from {config['server']}.{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}{row_count} new rows logged for {config['table']} from {config['server_ip']}.{Style.RESET_ALL}")
     else:
-        print(f"No new rows to log for {config['table']} from {config['server']}.")
+        print(f"No new rows to log for {config['table']} from {config['server_ip']}.")
 
 # Main function
 def main():
