@@ -4,8 +4,8 @@ import logging.handlers
 import socket
 import os
 import json
-from getpass import getpass  # For securely getting password input
-from colorama import Fore, Style  # For colored output
+from getpass import getpass  
+from colorama import Fore, Style  
 
 # Get the directory of the current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +16,7 @@ TABLES_CONFIG_FILE = os.path.join(current_dir, 'Tables.txt')
 
 # Syslog server details
 SYSLOG_SVR_IP = "Syslog IP"
-SYSLOG_SVR_PORT = 514  # default syslog port
+SYSLOG_SVR_PORT = 514  
 
 # State file path in the same directory as the script
 STATE_FILE = os.path.join(current_dir, '.SQL.state')
