@@ -1,1 +1,1 @@
-Server Name:Database Name:Table Name
+Server ip:Database Name:Table Name
