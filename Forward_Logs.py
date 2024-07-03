@@ -1,4 +1,4 @@
-import pymssql
+import pyodbc
 import logging
 import logging.handlers
 import socket
@@ -15,11 +15,11 @@ SERVER_CONFIG_FILE = os.path.join(current_dir, 'Login.json')
 TABLES_CONFIG_FILE = os.path.join(current_dir, 'Tables.txt')
 
 # Syslog server details
-SYSLOG_SVR_IP = "syslog ip"
+SYSLOG_SVR_IP = "ssylog ip"
 SYSLOG_SVR_PORT = 514  # default syslog port
 
 # State file path in the same directory as the script
-STATE_FILE = os.path.join(current_dir, '.SQL.state')
+STATE_FILE = os.path.join(current_dir, 'SQL.state')
 
 # Function to load server configurations from a JSON file
 def load_server_configs():
@@ -58,7 +58,7 @@ def create_state_file(table_configs):
 # Function to read the current state from the file
 def read_state():
     state = {}
-    if os.path.exists(STATE_FILE):
+    if (os.path.exists(STATE_FILE)):
         with open(STATE_FILE, "r") as f:
             for line in f:
                 parts = line.strip().split(":")
@@ -81,14 +81,15 @@ def fetch_data_from_db(config):
         state = read_state()
         last_processed_id = state.get(config['table'], 0)
 
-        # Prompt for password securely
-        password = getpass(prompt=f"Enter password for {config['user']}@{config['server_ip']}: ")
+        password = getpass(f"Enter password for {config['user']}@{config['server_ip']}: ")
 
-        connection = pymssql.connect(
-            server=config['server_ip'],
-            user=config['user'],
-            password=password,
-            database=config['database']
+        connection = pyodbc.connect(
+            f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+            f"SERVER={config['server_ip']};"
+            f"DATABASE={config['database']};"
+            f"UID={config['user']};"
+            f"PWD={password};"
+            f"TrustServerCertificate=yes"
         )
         cursor = connection.cursor()
         
@@ -97,10 +98,10 @@ def fetch_data_from_db(config):
         connection.close()
         
         return rows
-    except pymssql.Error as e:
+    except pyodbc.Error as e:
         print("Error fetching data:", e)
         return []
-
+    
 # Function to ping the syslog server to check connectivity
 def ping_syslog_server():
     try:
@@ -116,7 +117,7 @@ def ping_syslog_server():
 def send_to_syslog(data, config):
     logger = logging.getLogger('SyslogLogger')
     logger.setLevel(logging.INFO)
-    syslog_handler = logging.handlers.SysLogHandler(address=(SYSLOG_SVR_IP, SYSLOG_SVR_PORT))
+    syslog_handler = logging.handlers.SysLogHandler(address=(SYSLOG_SVR_IP, SYSLOG_SVR_PORT), ssl=False)
     formatter = logging.Formatter('%(asctime)s %(message)s')
     syslog_handler.setFormatter(formatter)
     logger.addHandler(syslog_handler)
