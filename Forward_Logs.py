@@ -15,7 +15,7 @@ SERVER_CONFIG_FILE = os.path.join(current_dir, 'Login.json')
 TABLES_CONFIG_FILE = os.path.join(current_dir, 'Tables.txt')
 
 # Syslog server details
-SYSLOG_SVR_IP = "Syslog IP"
+SYSLOG_SVR_IP = "Syslog ip"
 SYSLOG_SVR_PORT = 514  # default syslog port
 
 # State file path in the same directory as the script
@@ -41,7 +41,8 @@ def load_table_configs():
                     'server_ip': config['server_ip'],
                     'user': config['user'],
                     'database': db_name,
-                    'table': table_name
+                    'table': table_name,
+                    'port': config.get('port', '1433')  # Use the port if specified, otherwise default to 1433
                 })
             else:
                 print(f"{Fore.RED}Cannot find '{server_ip}' in the server configurations.{Style.RESET_ALL}")
@@ -58,7 +59,7 @@ def create_state_file(table_configs):
 # Function to read the current state from the file
 def read_state():
     state = {}
-    if (os.path.exists(STATE_FILE)):
+    if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             for line in f:
                 parts = line.strip().split(":")
@@ -85,7 +86,7 @@ def fetch_data_from_db(config):
 
         connection = pyodbc.connect(
             f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-            f"SERVER={config['server_ip']};"
+            f"SERVER={config['server_ip']},{config['port']};"
             f"DATABASE={config['database']};"
             f"UID={config['user']};"
             f"PWD={password};"
