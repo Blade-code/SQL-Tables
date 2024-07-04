@@ -15,7 +15,7 @@ SERVER_CONFIG_FILE = os.path.join(current_dir, 'Login.json')
 TABLES_CONFIG_FILE = os.path.join(current_dir, 'Tables.txt')
 
 # Syslog server details
-SYSLOG_SVR_IP = "ssylog ip"
+SYSLOG_SVR_IP = "Syslog IP"
 SYSLOG_SVR_PORT = 514  # default syslog port
 
 # State file path in the same directory as the script
@@ -117,7 +117,7 @@ def ping_syslog_server():
 def send_to_syslog(data, config):
     logger = logging.getLogger('SyslogLogger')
     logger.setLevel(logging.INFO)
-    syslog_handler = logging.handlers.SysLogHandler(address=(SYSLOG_SVR_IP, SYSLOG_SVR_PORT), ssl=False)
+    syslog_handler = logging.handlers.SysLogHandler(address=(SYSLOG_SVR_IP, SYSLOG_SVR_PORT))
     formatter = logging.Formatter('%(asctime)s %(message)s')
     syslog_handler.setFormatter(formatter)
     logger.addHandler(syslog_handler)
