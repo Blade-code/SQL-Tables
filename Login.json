@@ -1,6 +1,7 @@
 [
     {
-        "server_ip": "ip",
-        "user": "Server Name\\user name"
+        "server_ip": "IP Address",
+        "user": "User Name",
+        "port": "Port Number"
     }
 ]
